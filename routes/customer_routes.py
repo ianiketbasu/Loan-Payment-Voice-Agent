@@ -70,6 +70,12 @@ async def get_batch_call_status(batch_id: str):
     return await ElevenLabsService.get_batch_call_status(batch_id)
 
 
+@router.post("/validate-statuses")
+async def validate_statuses():
+    """Validate and cleanup stale 'calling' or 'in_progress' statuses"""
+    return await controller.validate_and_cleanup_stale_statuses()
+
+
 @router.post("/test-email")
 async def test_email():
     """

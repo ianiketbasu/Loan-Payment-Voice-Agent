@@ -6,15 +6,12 @@ PHONE_NUMBER_ID=your_phone_number_id_here
 # Server Configuration
 PORT=8000
 RELOAD=false
-FRONTEND_URL=http://localhost:8000
-BACKEND_URL=http://localhost:8001
 
-# Email Configuration (Mailtrap Email API - Optional, defaults are already set)
-# MAILTRAP_API_TOKEN=67b27b1351e541c002c4454d6f8f5d03
-# MAILTRAP_INBOX_ID=4175007
-# MAIL_FROM_EMAIL=noreply@tech.com
-# MAIL_FROM_NAME=Tech Loan Services
-
-# Ngrok Webhook (will be set later)
-WEBHOOK_URL=https://your-ngrok-url.ngrok-free.app/api/webhook
+# Email Configuration (Mailtrap Email API - Required)
+MAILTRAP_API_TOKEN=your_mailtrap_api_token_here
+MAILTRAP_INBOX_ID=your_mailtrap_inbox_id_here
+MAIL_FROM_EMAIL=noreply@yourdomain.com
+MAIL_FROM_NAME=Your Company Name
+# Optional: Override Mailtrap API URL (defaults to sandbox)
+# MAILTRAP_API_URL=https://sandbox.api.mailtrap.io/api/send
 

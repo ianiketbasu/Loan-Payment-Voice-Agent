@@ -198,6 +198,75 @@ class CustomerController:
         return {"status": "received"}
     
     @staticmethod
+    async def validate_and_cleanup_stale_statuses() -> Dict[str, Any]:
+        """
+        Validate and cleanup stale 'calling' or 'in_progress' statuses.
+        This is called on page load to ensure UI state matches actual call status.
+        """
+        from datetime import datetime, timedelta
+        
+        all_customers = get_all_customers()
+        stale_customers = []
+        cleaned_count = 0
+        
+        # Check customers with 'calling' or 'in_progress' status
+        for customer in all_customers:
+            if customer.get("status") in ["calling", "in_progress"]:
+                last_updated = customer.get("last_updated")
+                
+                # If last_updated is more than 10 minutes ago, consider it stale
+                if last_updated:
+                    try:
+                        last_updated_dt = datetime.fromisoformat(last_updated)
+                        time_diff = datetime.now() - last_updated_dt
+                        
+                        # If status is older than 10 minutes, reset to pending
+                        if time_diff > timedelta(minutes=10):
+                            update_customer_status(customer["id"], {
+                                "status": "pending"
+                            })
+                            cleaned_count += 1
+                            stale_customers.append({
+                                "id": customer["id"],
+                                "name": f"{customer.get('first_name')} {customer.get('last_name')}",
+                                "old_status": customer.get("status"),
+                                "reason": "Status older than 10 minutes"
+                            })
+                            continue
+                    except (ValueError, TypeError):
+                        # If date parsing fails, also consider it stale
+                        update_customer_status(customer["id"], {
+                            "status": "pending"
+                        })
+                        cleaned_count += 1
+                        stale_customers.append({
+                            "id": customer["id"],
+                            "name": f"{customer.get('first_name')} {customer.get('last_name')}",
+                            "old_status": customer.get("status"),
+                            "reason": "Invalid last_updated timestamp"
+                        })
+                        continue
+                else:
+                    # No last_updated timestamp, consider it stale
+                    update_customer_status(customer["id"], {
+                        "status": "pending"
+                    })
+                    cleaned_count += 1
+                    stale_customers.append({
+                        "id": customer["id"],
+                        "name": f"{customer.get('first_name')} {customer.get('last_name')}",
+                        "old_status": customer.get("status"),
+                        "reason": "Missing last_updated timestamp"
+                    })
+        
+        return {
+            "success": True,
+            "cleaned_count": cleaned_count,
+            "stale_customers": stale_customers,
+            "message": f"Cleaned up {cleaned_count} stale status(es)"
+        }
+    
+    @staticmethod
     async def submit_batch_call(
         call_name: str,
         customer_ids: Optional[List[int]] = None,

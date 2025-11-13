@@ -8,8 +8,28 @@ let pollingIntervals = {};
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
     console.log('Loan Reminder Voice Agent initialized');
-    refreshCustomers();
+    // Validate and cleanup stale statuses before loading customers
+    validateStaleStatuses().then(() => {
+        refreshCustomers();
+    });
 });
+
+// Validate and cleanup stale statuses on page load
+async function validateStaleStatuses() {
+    try {
+        const response = await fetch(`${API_BASE_URL}/validate-statuses`, {
+            method: 'POST'
+        });
+        const data = await response.json();
+        
+        if (data.cleaned_count > 0) {
+            console.log(`Cleaned up ${data.cleaned_count} stale status(es):`, data.stale_customers);
+        }
+    } catch (error) {
+        console.error('Error validating stale statuses:', error);
+        // Don't block page load if validation fails
+    }
+}
 
 // Fetch customers from backend
 async function refreshCustomers() {
@@ -37,6 +57,14 @@ setInterval(() => {
     // Refresh every 10 seconds to catch tool webhook updates
     refreshCustomers();
 }, 10000);
+
+// Periodically validate and cleanup stale statuses (every 5 minutes)
+setInterval(() => {
+    validateStaleStatuses().then(() => {
+        // Refresh customers after validation to show updated statuses
+        refreshCustomers();
+    });
+}, 300000); // 5 minutes
 
 // Render customers table
 function renderCustomers() {

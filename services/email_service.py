@@ -39,6 +39,32 @@ class EmailService:
                 MAIL_FROM_NAME
             )
             
+            # Validate required email configuration
+            if not MAILTRAP_API_TOKEN:
+                return {
+                    "success": False,
+                    "message": "MAILTRAP_API_TOKEN not configured. Please set it in environment variables.",
+                    "email": customer_email
+                }
+            if not MAILTRAP_INBOX_ID:
+                return {
+                    "success": False,
+                    "message": "MAILTRAP_INBOX_ID not configured. Please set it in environment variables.",
+                    "email": customer_email
+                }
+            if not MAIL_FROM_EMAIL:
+                return {
+                    "success": False,
+                    "message": "MAIL_FROM_EMAIL not configured. Please set it in environment variables.",
+                    "email": customer_email
+                }
+            if not MAIL_FROM_NAME:
+                return {
+                    "success": False,
+                    "message": "MAIL_FROM_NAME not configured. Please set it in environment variables.",
+                    "email": customer_email
+                }
+            
             # Generate payment link (dummy for now)
             payment_link = f"https://payment.tech.com/pay/{customer_id}?amount={loan_amount}"
             
